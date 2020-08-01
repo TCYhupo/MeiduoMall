@@ -19,5 +19,9 @@ from django.urls import path, re_path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     re_path(r'', include('users.urls')),
-    re_path(r'', include('verifications.urls'))
+    re_path(r'', include('verifications.urls')),
+    re_path(r'', include('oauth.urls')),
+    re_path(r'', include('areas.urls')),
+    re_path(r'', include('contents.urls')),
+    re_path(r'', include('goods.urls')),
 ]

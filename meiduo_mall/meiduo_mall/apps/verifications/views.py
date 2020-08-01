@@ -8,6 +8,7 @@ logger = logging.getLogger("django")
 import random
 from django import http
 from meiduo_mall.libs.yuntongxun.ccp_sms import CCP
+from celery_tasks.sms.tasks import ccp_send_sms_code
 # Create your views here.
 
 class ImageCodeView(View):
@@ -95,8 +96,9 @@ class SMSCodeView(View):
         p.execute()
 
         # 发送短信验证码
-        CCP().send_template_sms(mobile, [sms_code, 5], 1)
-        print("已发送")
+        # CCP().send_template_sms(mobile, [sms_code, 5], 1)
+        ccp_send_sms_code.delay(mobile, sms_code)
+        print("已发送, 手机验证码：", sms_code)
 
         # 相应结果
         return http.JsonResponse({

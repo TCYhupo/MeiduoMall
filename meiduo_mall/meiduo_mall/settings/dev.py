@@ -54,9 +54,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'users.apps.UsersConfig',
     'corsheaders',
+    'users.apps.UsersConfig',
     'verifications',
+    'oauth',
+    'areas',
+    'contents',
+    'goods',
 ]
 
 MIDDLEWARE = [
@@ -64,7 +68,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -232,3 +236,34 @@ CORS_ORIGIN_WHITELIST = (
 )
 
 CORS_ALLOW_CREDENTIALS = True  # 允许携带cookie
+
+AUTHENTICATE_BACKENDS = ['users.utils.UsernameMobileAuthBackend']
+
+# 发送邮件的设置
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# smtp服务器地址
+EMAIL_HOST = 'smtp.163.com'
+# 端口号
+EMAIL_PORT = 25
+# 发送邮件的邮箱
+EMAIL_HOST_USER = 'nephi_meiduo@163.com'
+# 在邮箱中设置的客户端授权密码
+EMAIL_HOST_PASSWORD = 'PWKBRTROZGHNJYSS'
+# 收件人看到的发件人
+EMAIL_FROM = 'Nephi<nephi_meiduo@163.com>'
+# 邮箱验证链接
+EMAIL_VERIFY_URL = 'http://www.meiduo.site:8080/success_verify_email.html?token='
+
+# QQ登录参数
+# 我们申请的 客户端id
+QQ_CLIENT_ID = '101474184'
+# 我们申请的 客户端秘钥
+QQ_CLIENT_SECRET = 'c6ce949e04e12ecc909ae6a8b09b637c'
+# 我们申请时添加的: 登录成功后回调的路径
+QQ_REDIRECT_URI = 'http://www.meiduo.site:8080/oauth_callback.html'
+
+# 指定当前工程使用的存储后端
+DEFAULT_FILE_STORAGE = 'meiduo_mall.utils.fastdfs.fastdfs_storage.FastDFSStorage'
+
+# 指定fdfs服务器的域名
+FDFS_URL = "http://image.meiduo.site:8888/"
