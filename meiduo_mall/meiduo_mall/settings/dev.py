@@ -61,6 +61,8 @@ INSTALLED_APPS = [
     'areas',
     'contents',
     'goods',
+    'django_crontab',
+    'haystack',
 ]
 
 MIDDLEWARE = [
@@ -267,3 +269,33 @@ DEFAULT_FILE_STORAGE = 'meiduo_mall.utils.fastdfs.fastdfs_storage.FastDFSStorage
 
 # 指定fdfs服务器的域名
 FDFS_URL = "http://image.meiduo.site:8888/"
+
+# 封装静态页面文件根目录
+GENERATED_STATIC_HTML_FILES_DIR = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'front_end_pc')
+
+# 指定定时任务的执行规则
+CRONJOBS = [
+    (   # 分 时 日 月 周
+        # =====周期执行=====
+        #'30 * * * *'  # 每个小时的第30分钟执行一次
+        # =====时间间隔执行=====
+        # '*/1 * * * *' # 每间隔１分钟执行一次
+        '*/1 * * * *',
+        'contents.generate_index.generate_index.html',
+        '>> ' + os.path.join(BASE_DIR, 'logs/crontab.log'))
+]
+
+# Haystack
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.elasticsearch_backend.ElasticsearchSearchEngine',
+        'URL': 'http://127.0.0.1:9200/', # Elasticsearch服务器ip地址，端口号固定为9200
+        'INDEX_NAME': 'meiduo_mall', # Elasticsearch建立的索引库的名称
+    },
+}
+
+# 当添加、修改、删除数据时，自动生成索引
+HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
+
+# 可以在 dev.py 中添加如下代码, 用于决定每页显示数据条数:
+HAYSTACK_SEARCH_RESULTS_PER_PAGE = 5
