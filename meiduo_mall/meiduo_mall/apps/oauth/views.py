@@ -10,6 +10,7 @@ from users.models import User
 from .utils import check_access_token
 from .models import OAuthQQUser
 from oauth.utils import generate_access_token
+from carts.utils import merge_cart_cookie_to_redis
 from django_redis import get_redis_connection
 logger = logging.getLogger('django')
 # Create your views here.
@@ -81,6 +82,9 @@ class QQUserView(View):
             'errmsg': 'ok'
         })
         response.set_cookie('username', user.username, max_age=3600*24*14)
+
+        # 合并购物车
+        response = merge_cart_cookie_to_redis(request, user, response)
         return response
 
     def post(self, request):
@@ -153,6 +157,9 @@ class QQUserView(View):
             'errmsg': 'ok'
         })
         response.set_cookie('username', user.username, max_age=3600 * 24 * 14)
+
+        # 合并购物车
+        response = merge_cart_cookie_to_redis(request, user, response)
 
         # 返回响应
         return response

@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.views import View
@@ -11,6 +12,8 @@ from django_redis import get_redis_connection
 from django import http
 from django.contrib.auth import login, authenticate, logout
 from meiduo_mall.utils.view import info_required
+from goods.models import SKU
+from carts.utils import merge_cart_cookie_to_redis
 
 # Create your views here.
 
@@ -192,6 +195,8 @@ class LoginView(View):
         response.set_cookie('username',
                             user.username,
                             max_age=3600 * 24 * 14)
+        # 合并购物车
+        response = merge_cart_cookie_to_redis(request, user, response)
         return response
 
 class LogoutView(View):
@@ -594,3 +599,51 @@ class ChangePasswordView(View):
         })
         response.delete_cookie('username')
         return response
+
+class UserBrowseHistory(View):
+    @method_decorator(login_required)
+    def post(self, request):
+        # 记录用户历史
+        # 1.获取请求参数
+        data = json.loads(request.body.decode())
+        sku_id = data.get('sku_id')
+        # 2.加入用户历史记录redis列表中
+        conn = get_redis_connection('history')
+        p = conn.pipeline()
+        # 2.1 去重
+        user = request.user
+        p.lrem('history_%s'%user.id, 0, sku_id)
+        # 2.2 左侧插入
+        p.lpush('history_%s'%user.id, sku_id)
+        # 2.3 截断列表，保证最多5条数据
+        p.ltrim('history_%s'%user.id, 0, 4)
+        p.execute()
+        # 3.构建响应
+        return JsonResponse({
+            'code': 0,
+            'errmsg': 'ok'
+        })
+
+    @method_decorator(login_required)
+    def get(self, request):
+        user = request.user
+
+        conn = get_redis_connection('history')
+        sku_ids = conn.lrange('history_%s'%user.id, 0, -1)
+        # sku_ids = [int(i) for i in sku_ids]
+
+        skus = SKU.objects.filter(id__in=sku_ids)
+
+        sku_list = []
+        for sku in skus:
+            sku_list.append({
+                'id': sku.id,
+                'name': sku.name,
+                'price': sku.price,
+                'default_image_url': sku.default_image_url.url
+            })
+        return JsonResponse({
+            'code': 0,
+            'errmsg': 'ok',
+            'skus': sku_list
+        })

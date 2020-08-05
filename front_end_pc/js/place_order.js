@@ -22,6 +22,10 @@ var vm = new Vue({
                 withCredentials:true
             })
             .then(response => {
+                if (response.data.code == 400){
+                    alert(response.data.errmsg);
+                    location.href = 'login.html';
+                }
                 this.skus = response.data.context.skus;
                 this.freight = response.data.context.freight;
                 this.addresses = response.data.context.addresses;
